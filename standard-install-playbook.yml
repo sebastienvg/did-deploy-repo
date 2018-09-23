@@ -1,2 +1,91 @@
 ---
+# ## Install the MINT ReposOS Configuration: selinux, limits, iptables, etc., Java install
+
+- hosts: common-servers
+  become: true
+  tags: repo
+  roles:
+   - repo-install
+
+ - hosts: common-servers
+   become: true
+   tags: common
+   roles:
+   - os-configuration
+   - java-install
+   - authorized-key
+
+ - hosts: common-servers
+   become: true
+   tags: hosts-file
+   roles:
+   - hosts-file-create
+
+### Install MINT-MariaDB
+ - hosts: data-servers
+   become: true
+   tags: database
+   roles:
+    - yum-expire-cache
+    - mint-mariadb-remove
+    - mint-genconfig-remove
+    - mint-mariadb-remove
+    - mint-genconfig-install
+    - mint-mariadb-install
+
+### Install RabbitMQ, MINT-Platform
+ - hosts: platform-servers
+   become: true
+   tags: platform
+   roles:
+    - yum-expire-cache
+    - mint-genconfig-remove
+    - mint-platform-remove
+    - mint-genconfig-install
+    - rabbitmq-install
+    - mint-platform-install
+    #- mint-platform-saml-setup
+    - mint-genconfig-run
+    - update-platform-properties
+    - rabbitmq-start
+    - mint-platform-start
+   any_errors_fatal: true
+
+### Install MINT-Admin
+ - hosts: admin-servers
+   become: true
+   tags: admin
+   roles:
+    - yum-expire-cache
+    - mint-genconfig-remove
+    - mint-admin-remove
+    - mint-admin-install
+    - mint-genconfig-install
+    - mint-genconfig-run
+    - mint-admin-start
+
+# ### Install mancenter
+ - hosts: mancenter-servers
+   become: true
+   tags: mancenter
+   roles:
+   - mancenter-install
+   - mint-genconfig-install
+   - mint-genconfig-run
+   - mancenter-start
+
+### Install MINT-Proxy
+- hosts: proxy-servers
+  become: true
+  tags: proxy
+  roles:
+   - yum-expire-cache
+   - mint-genconfig-remove
+   - mint-openresty-remove
+   - mint-openresty-install
+   - mint-idp-proxy-install
+   - mint-genconfig-install
+   - mint-genconfig-run
+   - mint-openresty-start
+
 
